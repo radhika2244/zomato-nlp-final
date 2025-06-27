@@ -110,15 +110,15 @@ with st.expander("🌥️ View Word Cloud of Reviews"):
 
 # 😊 Sentiment Analysis
 with st.expander("😊 Sentiment Analysis of Reviews"):
-    df['Sentiment'] = df['Rate'].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
-    st.dataframe(df[['Restaurant Name', 'Rate', 'Sentiment']].sort_values(by='Sentiment', ascending=False).head(10))
+    df['Sentiment'] = df['Rating'].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
+    st.dataframe(df[['Restaurant Name', 'Rating', 'Sentiment']].sort_values(by='Sentiment', ascending=False).head(10))
 
 # 📤 Download sentiment results
 @st.cache_data
 def convert_df(df):
     return df.to_csv(index=False).encode('utf-8')
 
-csv = convert_df(df[['Restaurent Name', 'Rate', 'Sentiment']])
+csv = convert_df(df[['Restaurent Name', 'Rating', 'Sentiment']])
 st.download_button("📥 Download Sentiment Results", csv, "sentiment_analysis.csv", "text/csv")
 
 # 📊 Top cuisines chart
