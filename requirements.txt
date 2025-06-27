@@ -3,3 +3,6 @@ pandas
 scikit-learn
 wordcloud
 matplotlib
+textblob
+nltk
+spacy
