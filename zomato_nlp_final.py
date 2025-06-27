@@ -88,7 +88,7 @@ st.dataframe(df[df['Cluster'] == selected_cluster][['Restaurant Name', 'Cuisines
 # 🔎 Search
 search_term = st.sidebar.text_input("Search by dish/cuisine:")
 if search_term:
-    matched = df[df['cuisines'].apply(lambda x: search_term.lower() in ' '.join(x).lower())]
+    matched = df[df['Cuisines'].apply(lambda x: search_term.lower() in ' '.join(x).lower())]
     st.markdown(f"#### 🔍 Restaurants matching '{search_term}'")
     st.dataframe(matched[['Restaurant Name', 'Cuisines', 'Location']].head(10))
 
