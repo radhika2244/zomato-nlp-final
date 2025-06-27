@@ -97,7 +97,7 @@ st.header("🧠 Natural Language Processing (NLP)")
 
 # Add fake reviews if not present
 if 'Review' not in df.columns:
-    df['Review'] = df['Restaurent Name'].apply(lambda x: f"{x} has great food and friendly staff.")
+    df['Review'] = df['Restaurant Name'].apply(lambda x: f"{x} has great food and friendly staff.")
 
 # 🌥️ Word Cloud
 with st.expander("🌥️ View Word Cloud of Reviews"):
