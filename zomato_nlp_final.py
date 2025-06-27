@@ -39,7 +39,7 @@ file_path = "zomato_small.csv.zip"  # Update this path to where your actual CSV 
 try:
    with zipfile.ZipFile("zomato_small.csv.zip") as z:
      with z.open("zomato_small.csv") as f:
-        df = pd.read_csv(f)
+        df = pd.read_csv(f) 
 
 except Exception as e:
     st.error(f"❌ Failed to read CSV file: {e}")
