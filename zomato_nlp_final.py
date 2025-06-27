@@ -35,10 +35,10 @@ st.markdown("<h1>🍽️ Zomato Cuisine Recommender</h1>", unsafe_allow_html=Tru
 st.markdown("<p style='text-align:center;'>Powered by Machine Learning and NLP</p>", unsafe_allow_html=True)
 
 # 📁 Read CSV directly from disk (bypass uploader)
-file_path = "zomato_small.csv.zip"  # Update this path to where your actual CSV is
+file_path = "zomato_minimal.csv.zip"  # Update this path to where your actual CSV is
 try:
-   with zipfile.ZipFile("zomato_small.csv.zip") as z:
-     with z.open("zomato_small.csv") as f:
+   with zipfile.ZipFile("zomato_minimal.csv.zip") as z:
+     with z.open("zomato_minimal.csv") as f:
         df = pd.read_csv(f) 
 
 except Exception as e:
