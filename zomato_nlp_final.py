@@ -1,6 +1,7 @@
 
 import streamlit as st
 import pandas as pd
+import zipfile
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
@@ -34,9 +35,12 @@ st.markdown("<h1>🍽️ Zomato Cuisine Recommender</h1>", unsafe_allow_html=Tru
 st.markdown("<p style='text-align:center;'>Powered by Machine Learning and NLP</p>", unsafe_allow_html=True)
 
 # 📁 Read CSV directly from disk (bypass uploader)
-file_path = "D:\zomato.csv"  # Update this path to where your actual CSV is
+file_path = "zomato_small.csv.zip"  # Update this path to where your actual CSV is
 try:
-    df = pd.read_csv(file_path)
+   with zipfile.ZipFile("zomato_small.csv.zip") as z:
+     with z.open("zomato_small.csv") as f:
+        df = pd.read_csv(f)
+
 except Exception as e:
     st.error(f"❌ Failed to read CSV file: {e}")
     st.stop()
