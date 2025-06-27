@@ -118,7 +118,7 @@ with st.expander("😊 Sentiment Analysis of Reviews"):
 def convert_df(df):
     return df.to_csv(index=False).encode('utf-8')
 
-csv = convert_df(df[['Restaurent Name', 'Rating', 'Sentiment']])
+csv = convert_df(df[['Restaurant Name', 'Rating', 'Sentiment']])
 st.download_button("📥 Download Sentiment Results", csv, "sentiment_analysis.csv", "text/csv")
 
 # 📊 Top cuisines chart
