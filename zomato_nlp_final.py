@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import zipfile
@@ -8,7 +7,6 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from textblob import TextBlob
 from collections import Counter
-
 
 # 🛠 Page setup
 st.set_page_config(
@@ -35,13 +33,11 @@ st.markdown("""
 st.markdown("<h1>🍽️ Zomato Cuisine Recommender</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center;'>Powered by Machine Learning and NLP</p>", unsafe_allow_html=True)
 
-# 📁 Read CSV directly from disk (bypass uploader)
-file_path = "zomato.zip"  
+# 📁 Read CSV from ZIP
 try:
     with zipfile.ZipFile("zomato.zip") as z:
-     with z.open("zomato.csv") as f:
-        df = pd.read_csv(f)
-
+        with z.open("zomato.csv") as f:
+            df = pd.read_csv(f)
 except Exception as e:
     st.error(f"❌ Failed to read CSV file: {e}")
     st.stop()
@@ -52,9 +48,6 @@ missing = [col for col in required_columns if col not in df.columns]
 if missing:
     st.error(f"⚠️ The uploaded CSV is missing these required columns: {missing}")
     st.stop()
-
-# 🎯 Sidebar for filters
-st.sidebar.header("🔍 Search & Filters")
 
 # 📋 Preview Data
 st.subheader("🔍 Preview of Uploaded Data")
@@ -67,29 +60,31 @@ mlb = MultiLabelBinarizer()
 cuisine_matrix = mlb.fit_transform(df['cuisines'])
 
 # 📊 Clustering
-kmeans = KMeans(n_clusters=5, random_state=42)
+kmeans = KMeans(n_clusters=5, random_state=42, n_init='auto')  # Fix crash for sklearn >= 1.4
 df['Cluster'] = kmeans.fit_predict(cuisine_matrix)
+
+# 🎯 Sidebar for filters
+st.sidebar.header("🔍 Search & Filters")
 
 # 📍 Location filter
 location = st.sidebar.selectbox("📍 Filter by Location", ["All"] + sorted(df['location'].dropna().unique()))
-if location != "All":
-    df = df[df['location'] == location]
+filtered_df = df if location == "All" else df[df['location'] == location]
 
-# 📌 Select cluster
-selected_cluster = st.sidebar.selectbox("🎯 Choose a Cuisine Cluster", sorted(df['Cluster'].unique()))
+# 📌 Cluster filter
+selected_cluster = st.sidebar.selectbox("🎯 Choose a Cuisine Cluster", sorted(filtered_df['Cluster'].unique()))
 
 # 📊 Cluster distribution
 with st.expander("📊 View Cuisine Cluster Distribution"):
-    st.bar_chart(df['Cluster'].value_counts().sort_index())
+    st.bar_chart(filtered_df['Cluster'].value_counts().sort_index())
 
 # 📋 Top restaurants
 st.markdown("#### ✅ Top Restaurants in Selected Cluster")
-st.dataframe(df[df['Cluster'] == selected_cluster][['name', 'cuisines', 'location']].head(10))
+st.dataframe(filtered_df[filtered_df['Cluster'] == selected_cluster][['name', 'cuisines', 'location']].head(10))
 
 # 🔎 Search
 search_term = st.sidebar.text_input("Search by dish/cuisine:")
 if search_term:
-    matched = df[df['cuisines'].apply(lambda x: search_term.lower() in ' '.join(x).lower())]
+    matched = filtered_df[filtered_df['cuisines'].apply(lambda x: search_term.lower() in ' '.join(x).lower())]
     st.markdown(f"#### 🔍 Restaurants matching '{search_term}'")
     st.dataframe(matched[['name', 'cuisines', 'location']].head(10))
 
@@ -102,7 +97,7 @@ if 'Review' not in df.columns:
 
 # 🌥️ Word Cloud
 with st.expander("🌥️ View Word Cloud of Reviews"):
-    all_reviews = ' '.join(df['Review'].dropna().astype(str))
+    all_reviews = ' '.join(df['Review'].dropna().astype(str).head(1000))  # Limit to avoid memory crash
     wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_reviews)
     fig_wc, ax_wc = plt.subplots(figsize=(10, 4))
     ax_wc.imshow(wordcloud, interpolation='bilinear')
@@ -111,16 +106,19 @@ with st.expander("🌥️ View Word Cloud of Reviews"):
 
 # 😊 Sentiment Analysis
 with st.expander("😊 Sentiment Analysis of Reviews"):
-    df['Sentiment'] = df['rate'].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
-    st.dataframe(df[['name', 'rate', 'Sentiment']].sort_values(by='Sentiment', ascending=False).head(10))
+    if 'rate' in df.columns:
+        df['Sentiment'] = df['rate'].apply(lambda x: TextBlob(str(x)).sentiment.polarity)
+        st.dataframe(df[['name', 'rate', 'Sentiment']].sort_values(by='Sentiment', ascending=False).head(10))
 
-# 📤 Download sentiment results
-@st.cache_data
-def convert_df(df):
-    return df.to_csv(index=False).encode('utf-8')
+        # 📤 Download sentiment results
+        @st.cache_data
+        def convert_df(df):
+            return df.to_csv(index=False).encode('utf-8')
 
-csv = convert_df(df[['name', 'rate', 'Sentiment']])
-st.download_button("📥 Download Sentiment Results", csv, "sentiment_analysis.csv", "text/csv")
+        csv = convert_df(df[['name', 'rate', 'Sentiment']])
+        st.download_button("📥 Download Sentiment Results", csv, "sentiment_analysis.csv", "text/csv")
+    else:
+        st.warning("⚠️ 'rate' column not found. Sentiment analysis skipped.")
 
 # 📊 Top cuisines chart
 with st.expander("🍱 View Top 10 Cuisines"):
